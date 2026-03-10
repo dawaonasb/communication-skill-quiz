@@ -229,7 +229,7 @@ function sendEmail(name,zone,score,correct){
     date:new Date().toLocaleString('ar-IQ'),
     wrong_answers:wrong
   }).then(()=>{
-    statusEl.textContent='✅ تم إرسال نتيجتك بنجاح إلى المشرف!';
+    statusEl.textContent='✅ تم إرسال نتيجتك بنجاح إلى الادارة!';
     statusEl.className='sending-status success';
   }).catch(err=>{
     statusEl.textContent='⚠️ Failed to send — error: '+err.text;
