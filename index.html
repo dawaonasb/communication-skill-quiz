@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>كويز مهارات التواصل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+:root { --primary:#0a4d68;--accent:#00b4d8;--light:#e0f7fa;--bg:#f0f9ff;--text:#0d2b3e;--muted:#5a8a9f;--success:#06d6a0;--error:#ef476f;--border:#cde8f0; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:40px 16px 80px;background-image:radial-gradient(circle at 80% 10%,#b2ebf2 0%,transparent 40%),radial-gradient(circle at 10% 90%,#e0f7fa 0%,transparent 40%);}
+.screen{display:none;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+.welcome-box{background:white;border:1.5px solid var(--border);border-radius:24px;padding:48px 36px;max-width:520px;width:100%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.07);margin-top:60px;}
+.welcome-icon{width:72px;height:72px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 20px;}
+.welcome-box h1{font-size:22px;font-weight:900;color:var(--primary);margin-bottom:8px;}
+.welcome-box p{color:var(--muted);font-size:14px;line-height:1.8;margin-bottom:28px;}
+.input-group{margin-bottom:16px;text-align:right;}
+.input-group label{display:block;font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px;}
+.input-group input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;font-family:'Cairo',sans-serif;font-size:15px;color:var(--text);outline:none;background:white;}
+.input-group input:focus{border-color:var(--accent);}
+.quiz-header{text-align:center;margin-bottom:28px;max-width:640px;width:100%;}
+.rep-name-tag{display:inline-block;background:var(--primary);color:white;font-size:12px;font-weight:700;padding:4px 14px;border-radius:20px;margin-bottom:10px;}
+.quiz-header h2{font-size:16px;font-weight:700;color:var(--primary);}
+.progress-bar-wrap{width:100%;max-width:640px;background:var(--border);border-radius:100px;height:8px;margin-bottom:8px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:100px;transition:width 0.5s ease;}
+.progress-label{font-size:12px;color:var(--muted);text-align:center;margin-bottom:20px;max-width:640px;width:100%;}
+.question-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:28px 24px;width:100%;max-width:640px;box-shadow:0 8px 40px rgba(0,0,0,0.06);margin-bottom:20px;}
+.question-number{font-size:12px;font-weight:700;color:var(--accent);margin-bottom:8px;}
+.question-text{font-size:16px;font-weight:700;color:var(--primary);line-height:1.7;margin-bottom:20px;}
+.options{display:flex;flex-direction:column;gap:10px;}
+.option{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.2s;background:white;font-size:14px;font-weight:600;color:var(--text);}
+.option:hover{border-color:var(--accent);background:var(--light);transform:translateX(-3px);}
+.option.selected{border-color:var(--primary);background:linear-gradient(135deg,#e0f7fa,#b2ebf2);color:var(--primary);}
+.option.correct{border-color:var(--success);background:#d8fdf0;color:#027a59;}
+.option.wrong{border-color:var(--error);background:#fff0f3;color:#b91c3c;}
+.opt-letter{width:28px;height:28px;min-width:28px;border-radius:50%;background:var(--bg);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--primary);}
+.option.selected .opt-letter{background:var(--primary);color:white;border-color:var(--primary);}
+.option.correct .opt-letter{background:var(--success);color:white;border-color:var(--success);}
+.option.wrong .opt-letter{background:var(--error);color:white;border-color:var(--error);}
+.feedback-box{margin-top:14px;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.7;display:none;}
+.feedback-box.show{display:block;}
+.correct-fb{background:#d8fdf0;color:#027a59;border:1.5px solid #06d6a0;}
+.wrong-fb{background:#fff0f3;color:#b91c3c;border:1.5px solid #ef476f;}
+.nav-row{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:640px;}
+.results-box{background:white;border:1.5px solid var(--border);border-radius:24px;padding:40px 32px;max-width:560px;width:100%;text-align:center;box-shadow:0 12px 48px rgba(0,0,0,0.07);margin-top:40px;}
+.score-circle{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;margin:0 auto 24px;box-shadow:0 12px 40px rgba(10,77,104,0.3);}
+.score-circle .num{font-size:38px;font-weight:900;line-height:1;}
+.score-circle .lbl{font-size:12px;opacity:0.85;}
+.results-box h2{font-size:22px;font-weight:900;color:var(--primary);margin-bottom:8px;}
+.results-box .sub{color:var(--muted);font-size:14px;margin-bottom:24px;line-height:1.8;}
+.sending-status{padding:14px 20px;border-radius:12px;font-size:14px;font-weight:600;margin-bottom:20px;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);}
+.sending-status.success{border-color:var(--success);background:#d8fdf0;color:#027a59;}
+.sending-status.fail{border-color:var(--error);background:#fff0f3;color:#b91c3c;}
+.breakdown{width:100%;background:var(--bg);border-radius:14px;padding:16px;margin-bottom:24px;text-align:right;}
+.b-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;font-weight:600;}
+.b-item:last-child{border-bottom:none;}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-ok{background:#d8fdf0;color:#027a59;}
+.badge-no{background:#fff0f3;color:#b91c3c;}
+.btn{padding:14px 28px;border-radius:12px;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#0a6b8f);color:white;box-shadow:0 4px 20px rgba(10,77,104,0.25);}
+.btn-primary:hover{transform:translateY(-2px);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border);}
+.btn-ghost:hover{background:var(--light);color:var(--primary);}
+.btn-full{width:100%;}
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: WELCOME -->
+<div class="screen" id="screenWelcome">
+  <div class="welcome-box">
+    <div class="welcome-icon">💊</div>
+    <h1>كويز مهارات التواصل</h1>
+    <p>مبيعات الأدوية — 20 سؤال اختيار من متعدد<br>أدخل اسمك لتبدأ وتُسجَّل نتيجتك تلقائياً</p>
+    <div class="input-group">
+      <label>الاسم الكامل</label>
+      <input type="text" id="repName" placeholder="مثال: أحمد محمد" />
+    </div>
+    <div class="input-group">
+      <label>المنطقة / الزون</label>
+      <input type="text" id="repZone" placeholder="مثال: الرصافة الجنوبية" />
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startQuiz()">ابدأ الكويز ←</button>
+  </div>
+</div>
+
+<!-- SCREEN 2: QUIZ -->
+<div class="screen" id="screenQuiz">
+  <div class="quiz-header">
+    <div class="rep-name-tag" id="nameTag"></div>
+    <h2>كويز مهارات التواصل — مبيعات الأدوية</h2>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:5%"></div></div>
+  <div class="progress-label" id="progressLabel">السؤال 1 من 20</div>
+  <div id="quizArea"></div>
+  <div class="nav-row">
+    <button class="btn btn-ghost" id="prevBtn" onclick="prevQ()" disabled>← السابق</button>
+    <button class="btn btn-primary" id="nextBtn" onclick="nextQ()" disabled>التالي →</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: RESULTS -->
+<div class="screen" id="screenResults">
+  <div class="results-box">
+    <div class="score-circle">
+      <span class="num" id="scoreNum">0%</span>
+      <span class="lbl" id="scoreRaw">0/20</span>
+    </div>
+    <h2 id="resultTitle"></h2>
+    <div class="sub" id="resultSub"></div>
+    <div class="sending-status" id="sendStatus">⏳ جاري إرسال نتيجتك...</div>
+    <div class="breakdown" id="breakdown"></div>
+    <button class="btn btn-primary btn-full" onclick="restartQuiz()">🔄 أعد المحاولة</button>
+  </div>
+</div>
+
+<script>
+const EJS_SERVICE  = 'service_xt1ahrp';
+const EJS_TEMPLATE = 'template_ew2gndh';
+const EJS_KEY      = 'zr1KzLWWJvKipWqcv';
+
+const questions = [
+  {q:"ما العامل الأهم في نجاح المندوب؟",options:["المنتج","السعر","الثقة والتواصل","عدد الزيارات"],correct:2,feedback:"الثقة والتواصل هي الأساس — المنتج والسعر يمكن منافستهما، لكن الثقة لا تُشترى."},
+  {q:"ما الخطأ الأكثر شيوعاً عند الزيارة؟",options:["عدم التحية","البدء بالبيع","التعريف بالنفس","الابتسام"],correct:1,feedback:"البدء بالبيع مباشرةً يُشعر الطبيب بأنك تريد شيئاً منه، مو تساعده."},
+  {q:"ما الذي يريده الطبيب غالباً؟",options:["بروشور","معلومات مختصرة مفيدة","حديث طويل","هدايا"],correct:1,feedback:"الطبيب مشغول — معلومة واحدة قوية ومختصرة أفضل من عشر دقائق حديث."},
+  {q:"أي سلوك يضعف التواصل؟",options:["الابتسام","النظر للهاتف","التواصل البصري","الوقوف بثقة"],correct:1,feedback:"النظر للهاتف يُرسل رسالة: 'أنت مو أولويتي' — وهذا مدمر للعلاقة."},
+  {q:"إذا تكلم المندوب 80% من الوقت؟",options:["استماع جيد","عرض طويل","تفاعل قوي","علاقة جيدة"],correct:1,feedback:"العرض الطويل يُتعب الطبيب ويُفقده الاهتمام. القاعدة: اسمع أكثر مما تتكلم."},
+  {q:"لماذا نكرر كلام العميل؟",options:["لإظهار الفهم","لإضاعة الوقت","لإقناعه","لتغيير الموضوع"],correct:0,feedback:"تكرار كلام الطبيب يُثبت له أنك فاهم احتياجه — وهذا يبني ثقة حقيقية."},
+  {q:"أي سؤال مفتوح؟",options:["هل تستخدم الدواء؟","كم حالة تراها أسبوعياً؟","هل السعر جيد؟","هل جربته؟"],correct:1,feedback:"الأسئلة المفتوحة تبدأ بـ كم / كيف / ماذا — تفتح حوار حقيقي مع الطبيب."},
+  {q:"ما هدف الأسئلة في الزيارة؟",options:["البيع السريع","فهم الاحتياج","إنهاء الزيارة","تقديم بروشور"],correct:1,feedback:"الأسئلة أداة لفهم مشكلة الطبيب — مو لإثبات أنك تعرف كل شيء."},
+  {q:"كم نقطة يجب أن يحتوي العرض؟",options:["10","7","5","3"],correct:3,feedback:"3 نقاط فقط — الدماغ يحتفظ بـ 3 معلومات بسهولة. أكثر من كذا = نسيان."},
+  {q:"ما الخطأ الشائع في العرض؟",options:["شرح الدراسة كاملة","ذكر النتيجة","ذكر الفائدة","اختصار المعلومات"],correct:0,feedback:"شرح الدراسة كاملة يُربك الطبيب — اذكر النتيجة فقط بجملة واحدة واضحة."},
+  {q:"ما يقنع الطبيب أكثر؟",options:["السعر","الأدلة العلمية","الهدايا","الحديث الطويل"],correct:1,feedback:"الأدلة العلمية هي لغة الأطباء — أرقام وإحصائيات > أي كلام آخر."},
+  {q:"ماذا يعني الدليل الاجتماعي؟",options:["السعر","تجربة الآخرين","إعلان","بروشور"],correct:1,feedback:"تجربة الآخرين قوية جداً: 'دكتور X في نفس تخصصك يستخدمه بنتائج ممتازة'."},
+  {q:"ماذا يعني الاعتراض؟",options:["رفض","اهتمام","غضب","عدم فهم"],correct:1,feedback:"الاعتراض = اهتمام! لو ما يهتم ما سأل. الاعتراض فرصة، مو عقبة."},
+  {q:"أول خطوة في الرد على الاعتراض؟",options:["الجدال","الاستماع","الدفاع","تغيير الموضوع"],correct:1,feedback:"الاستماع أولاً — لا تدافع ولا تجادل. اسمع كامل الاعتراض ثم ارد بهدوء."},
+  {q:"ماذا تكشف الاعتراضات؟",options:["مشاكل العميل","السعر","الشركة","المنافس"],correct:0,feedback:"الاعتراضات تكشف مخاوف حقيقية عند الطبيب — استخدمها لتفهمه أكثر."},
+  {q:"أفضل نهاية للزيارة؟",options:["المغادرة","طلب تجربة","الصمت","ترك بروشور"],correct:1,feedback:"طلب تجربة المنتج مع أول 3-5 مرضى هو الإغلاق المثالي — محدد وقابل للقياس."},
+  {q:"ما الخطأ الأكبر في نهاية الزيارة؟",options:["الإطالة","المغادرة بدون طلب","الابتسام","الشكر"],correct:1,feedback:"المغادرة بدون طلب = ضياع كل جهد الزيارة. دائماً اطلب خطوة محددة."},
+  {q:"ماذا يبني العلاقة مع الطبيب؟",options:["زيارة واحدة","الاستمرارية","السعر","الهدايا"],correct:1,feedback:"الاستمرارية والانتظام في الزيارة هما أساس أي علاقة طويلة الأمد."},
+  {q:"متى تحدث المبيعات غالباً؟",options:["أول زيارة","بعد المتابعة","قبل الشرح","قبل السؤال"],correct:1,feedback:"الدراسات تقول: 80% من المبيعات تحدث بعد الزيارة الخامسة أو أكثر."},
+  {q:"ما أهم عقلية للمندوب الناجح؟",options:["البيع السريع","فهم العميل","الحديث الطويل","الخصم"],correct:1,feedback:"فهم العميل أولاً — المندوب الناجح يفكر: 'كيف أساعد هذا الطبيب؟' مو 'كيف أبيع؟'"}
+];
+
+let current=0, repName='', repZone='';
+let selected=new Array(questions.length).fill(null);
+let answered=new Array(questions.length).fill(false);
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  emailjs.init(EJS_KEY);
+  showScreen('screenWelcome');
+});
+
+function startQuiz(){
+  repName=document.getElementById('repName').value.trim();
+  repZone=document.getElementById('repZone').value.trim();
+  if(!repName){alert('الرجاء إدخال اسمك أولاً');return;}
+  document.getElementById('nameTag').textContent='👤 '+repName;
+  showScreen('screenQuiz');
+  renderQ();
+}
+
+function renderQ(){
+  const q=questions[current];
+  const letters=['أ','ب','ج','د'];
+  document.getElementById('progressBar').style.width=((current+1)/questions.length*100)+'%';
+  document.getElementById('progressLabel').textContent='السؤال '+(current+1)+' من '+questions.length;
+  const isAnswered=answered[current];
+  let optHTML=q.options.map((opt,i)=>{
+    let cls='option';
+    if(isAnswered){if(i===q.correct)cls+=' correct';else if(i===selected[current]&&i!==q.correct)cls+=' wrong';}
+    else if(selected[current]===i)cls+=' selected';
+    return '<div class="'+cls+'" onclick="selectOpt('+i+')"><span class="opt-letter">'+letters[i]+'</span>'+opt+'</div>';
+  }).join('');
+  const fbHTML=isAnswered?'<div class="feedback-box '+(selected[current]===q.correct?'correct-fb':'wrong-fb')+' show">'+(selected[current]===q.correct?'✅ '+q.feedback:'❌ الإجابة الصحيحة: '+q.options[q.correct]+'<br>'+q.feedback)+'</div>':'';
+  document.getElementById('quizArea').innerHTML='<div class="question-card"><div class="question-number">السؤال '+(current+1)+'</div><div class="question-text">'+q.q+'</div><div class="options">'+optHTML+'</div>'+fbHTML+'</div>';
+  document.getElementById('prevBtn').disabled=current===0;
+  const nb=document.getElementById('nextBtn');
+  nb.disabled=!isAnswered;
+  nb.textContent=current===questions.length-1?'عرض النتائج 🎯':'التالي →';
+}
+
+function selectOpt(i){
+  if(answered[current])return;
+  selected[current]=i;answered[current]=true;renderQ();
+}
+function nextQ(){if(current<questions.length-1){current++;renderQ();}else showResults();}
+function prevQ(){if(current>0){current--;renderQ();}}
+
+function showResults(){
+  const correctCount=selected.filter((s,i)=>s===questions[i].correct).length;
+  const score=correctCount*5;
+  document.getElementById('scoreNum').textContent=score+'%';
+  document.getElementById('scoreRaw').textContent=correctCount+' / '+questions.length;
+  let emoji,title,sub;
+  if(score>=80){emoji='🏆';title='ممتاز!';sub='أنت مندوب محترف بمهارات تواصل عالية!';}
+  else if(score>=60){emoji='👍';title='جيد!';sub='مستواك جيد. مع تدريب إضافي ستصبح أقوى.';}
+  else{emoji='💪';title='في البداية كلنا نتعلم!';sub='راجع المحتوى وأعد المحاولة.';}
+  document.getElementById('resultTitle').textContent=emoji+' '+title;
+  document.getElementById('resultSub').textContent=sub;
+  document.getElementById('breakdown').innerHTML=questions.map((q,i)=>{
+    const ok=selected[i]===q.correct;
+    return '<div class="b-item"><span class="badge '+(ok?'badge-ok':'badge-no')+'">'+(ok?'✅ صح':'❌ خطأ')+'</span><span style="flex:1;margin-right:10px;font-size:12px">'+q.q.substring(0,42)+'...</span></div>';
+  }).join('');
+  showScreen('screenResults');
+  sendEmail(repName,repZone,score,correctCount);
+}
+
+function sendEmail(name,zone,score,correct){
+  const statusEl=document.getElementById('sendStatus');
+  const rating=score>=80?'🏆 ممتاز':score>=60?'👍 جيد':'💪 يحتاج تحسين';
+  const wrong=questions.map((q,i)=>selected[i]!==q.correct?'Q'+(i+1)+': '+q.q+' → '+q.options[q.correct]:null).filter(Boolean).join('\n')||'All correct ✅';
+  emailjs.send(EJS_SERVICE,EJS_TEMPLATE,{
+    to_email:'dawaonasb@gmail.com',
+    rep_name:name,
+    rep_zone:zone||'—',
+    score:score+'% ('+correct+' of '+questions.length+')',
+    rating:rating,
+    date:new Date().toLocaleString('ar-IQ'),
+    wrong_answers:wrong
+  }).then(()=>{
+    statusEl.textContent='✅ تم إرسال نتيجتك بنجاح إلى المشرف!';
+    statusEl.className='sending-status success';
+  }).catch(err=>{
+    statusEl.textContent='⚠️ Failed to send — error: '+err.text;
+    statusEl.className='sending-status fail';
+  });
+}
+
+function restartQuiz(){
+  current=0;
+  selected=new Array(questions.length).fill(null);
+  answered=new Array(questions.length).fill(false);
+  showScreen('screenWelcome');
+}
+</script>
+</body>
+</html>
